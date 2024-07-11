@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from werkzeug.security import generate_password_hash
 import os
 from os import path
 from mad1.models import DB_NAME, db, User
@@ -16,6 +17,10 @@ def create_app():
         if not path.exists('mad1/instance' + DB_NAME):
             db.create_all()
             print("Created db")
+            try:
+                create_admin()
+            except Exception as e:
+                pass
 
     app.app_context().push()
 
@@ -32,6 +37,22 @@ def create_app():
         return User.query.get(int(user_id))
 
     return app
+
+
+def create_admin():
+    name = "admin"
+    email = "admin@mad1.com"
+    password = "admin"
+    role = "admin"
+
+    admin = User(name = name,
+                 email = email,
+                 password = generate_password_hash(password, method="pbkdf2:sha256"),
+                 role = role)
+    
+    db.session.add(admin)
+    db.session.commit()
+    print("admin added")
 
 
 
